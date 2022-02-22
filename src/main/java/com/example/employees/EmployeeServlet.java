@@ -1,7 +1,15 @@
-/* Copyright � 2015 Oracle and/or its affiliates. All rights reserved. */
+/* Copyright � 2015 Oracle and/or its affiliates. All rights reserved. */
 package com.example.employees;
 
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,9 +66,38 @@ public class EmployeeServlet extends HttpServlet {
     
     private void searchEmployeeByName(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        String employeeName = req.getParameter("employeeName");
-        List<Employee> result = employeeService.searchEmployeesByName(employeeName);        
-        forwardListEmployees(req, resp, result);
+        String firstName = String.valueOf(req.getParameter("employeeName"));
+        System.out.println(firstName);
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.indices("coachingclass");
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchQuery("instructor",firstName));
+        searchRequest.source(searchSourceBuilder);
+        try {
+            SearchResponse searchResponse = null;
+            searchResponse = Main.client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse.getHits().getTotalHits().value > 0) {
+                SearchHit[] searchHit = searchResponse.getHits().getHits();
+                List<Course> courseList =new ArrayList<>();
+                for (SearchHit hit : searchHit) {
+                    String jsonStr = hit.getSourceAsString();
+                    System.out.println(jsonStr);
+                    Course course = jsonToPojo(jsonStr, Course.class);
+                    courseList.add(course);
+                }
+                forwardListCourses(req, resp, courseList);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void forwardListCourses( HttpServletRequest req, HttpServletResponse resp, List courseList)
+            throws ServletException, IOException {
+            String nextJSP = "/jsp/list-employees.jsp";
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(nextJSP);
+            req.setAttribute("employeeList", courseList);
+            dispatcher.forward(req, resp);
     }
 
     private void forwardListEmployees(HttpServletRequest req, HttpServletResponse resp, List employeeList)
@@ -138,6 +175,23 @@ public class EmployeeServlet extends HttpServlet {
         }
         List<Employee> employeeList = employeeService.getAllEmployees();
         forwardListEmployees(req, resp, employeeList);
+    }
+
+    /**
+       * 将json结果集转化为对象
+       *
+       * @param jsonData json数据
+       * @param beanType 对象中的object类型
+       * @return
+       */
+    public static <T> T jsonToPojo(String jsonData, Class<T> beanType) {
+        try {
+            T t = Main.MAPPER.readValue(jsonData, beanType);
+            return t;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

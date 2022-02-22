@@ -41,16 +41,16 @@
                             <thead>
                                 <tr>
                                     <td>#</td>
-                                    <td>Name</td>
-                                    <td>Last name</td>
-                                    <td>Birth date</td>
-                                    <td>Role</td>
-                                    <td>Department</td>
-                                    <td>E-mail</td>
+                                    <td>classname</td>
+                                    <td>course</td>
+                                    <td>instructor</td>
+                                    <td>language</td>
+                                    <td>seatsAvailable</td>
+                                    <td>fees</td>
                                     <td></td>
                                 </tr>
                             </thead>
-                            <c:forEach var="employee" items="${employeeList}">
+                            <c:forEach var="course" items="${employeeList}">
                                 <c:set var="classSucess" value=""/>
                                 <c:if test ="${idEmployee == employee.id}">                        	
                                     <c:set var="classSucess" value="info"/>
@@ -59,12 +59,12 @@
                                     <td>
                                         <a href="/employee?idEmployee=${employee.id}&searchAction=searchById">${employee.id}</a>
                                     </td>                                    
-                                    <td>${employee.name}</td>
-                                    <td>${employee.lastName}</td>
-                                    <td>${employee.birthDate}</td>
-                                    <td>${employee.role}</td>
-                                    <td>${employee.department}</td>
-                                    <td>${employee.email}</td>   
+                                    <td>${course.classname}</td>
+                                    <td>${course.course}</td>
+                                    <td>${course.instructor}</td>
+                                    <td>${course.language}</td>
+                                    <td>${course.seatsAvailable}</td>
+                                    <td>${course.fees}</td>
                                     <td><a href="#" id="remove" 
                                            onclick="document.getElementById('action').value = 'remove';document.getElementById('idEmployee').value = '${employee.id}';
                                                     

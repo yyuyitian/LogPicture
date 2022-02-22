@@ -90,6 +90,7 @@ public class FileUploadServlet extends HttpServlet {
                     fileItem.delete();
                 }
             }
+
         }
         catch (Exception e) {
             // TODO: handle exception
